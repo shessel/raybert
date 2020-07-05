@@ -1,4 +1,4 @@
-use raybert::{math, img};
+use raybert::{img, math};
 
 fn main() {
     let v1 = math::Vec3::<f32> {

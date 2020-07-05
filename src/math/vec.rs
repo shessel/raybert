@@ -1,6 +1,6 @@
+use std::cmp::PartialOrd;
+use std::fmt::{Debug, Display};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use std::fmt::{Display, Debug};
-use std::cmp::{PartialOrd};
 
 pub trait Sqrt {
     fn sqrt(self) -> Self;
@@ -186,18 +186,18 @@ impl<T: Number> Neg for Vec3<T> {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
-    type TestPrecision = f32;
-    type TestVec = Vec3<TestPrecision>;
+    pub type TestPrecision = f32;
+    pub type TestVec = Vec3<TestPrecision>;
 
-    fn eq_helper_vec3<T: Number>(lhs: Vec3<T>, rhs: Vec3<T>) {
+    pub fn eq_helper_vec3<T: Number>(lhs: Vec3<T>, rhs: Vec3<T>) {
         assert!((lhs.x - rhs.x).abs() < T::EPSILON, "{} != {}", lhs.x, rhs.x);
         assert!((lhs.y - rhs.y).abs() < T::EPSILON, "{} != {}", lhs.y, rhs.y);
         assert!((lhs.z - rhs.z).abs() < T::EPSILON, "{} != {}", lhs.z, rhs.z);
     }
 
-    fn eq_helper<T: Number>(lhs: T, rhs: T) {
+    pub fn eq_helper<T: Number>(lhs: T, rhs: T) {
         assert!((lhs - rhs).abs() < T::EPSILON, "{} != {}", lhs, rhs);
     }
 
@@ -252,8 +252,7 @@ mod tests {
 
         let expected = TestVec::new(v1.x * s1, v1.y * s1, v1.z * s1);
 
-        let result = v1 * s1;
-        eq_helper_vec3(result, expected);
+        eq_helper_vec3(v1 * s1, expected);
     }
 
     #[test]
@@ -325,7 +324,7 @@ mod tests {
 
         let mut v2 = TestVec::new(5.0, 5.0, 0.0);
         v2.normalize();
-        
+
         let expected2 = TestVec::new(0.5.sqrt(), 0.5.sqrt(), 0.0);
         eq_helper_vec3(v2, expected2);
     }
