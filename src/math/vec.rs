@@ -1,4 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::fmt::{Display, Debug};
+use std::cmp::{PartialOrd};
 
 pub trait Sqrt {
     fn sqrt(self) -> Self;
@@ -15,6 +17,32 @@ impl Sqrt for f64 {
         self.sqrt()
     }
 }
+pub trait Abs {
+    fn abs(self) -> Self;
+}
+
+impl Abs for f32 {
+    fn abs(self) -> Self {
+        self.abs()
+    }
+}
+
+impl Abs for f64 {
+    fn abs(self) -> Self {
+        self.abs()
+    }
+}
+pub trait Epsilon {
+    const EPSILON: Self;
+}
+
+impl Epsilon for f32 {
+    const EPSILON: Self = f32::EPSILON;
+}
+
+impl Epsilon for f64 {
+    const EPSILON: Self = f64::EPSILON;
+}
 
 pub trait Number:
     Copy
@@ -28,6 +56,11 @@ pub trait Number:
     + Sub<Output = Self>
     + SubAssign
     + Sqrt
+    + Abs
+    + Epsilon
+    + Display
+    + Debug
+    + PartialOrd
 {
 }
 
@@ -55,6 +88,14 @@ impl<T: Number> Vec3<T> {
     pub fn len_squared(&self) -> T {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
+
+    pub fn normalize(&mut self) {
+        *self /= self.len()
+    }
+}
+
+pub fn dot<T: Number>(lhs: Vec3<T>, rhs: Vec3<T>) -> T {
+    lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
 }
 
 impl<T: Number> Add for Vec3<T> {
@@ -147,99 +188,153 @@ impl<T: Number> Neg for Vec3<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const EPSILON_F: f32 = 0.00000001;
+    type TestPrecision = f32;
+    type TestVec = Vec3<TestPrecision>;
 
-    fn eq_helper(lhs: Vec3f, rhs: Vec3f) {
-        assert!((lhs.x - rhs.x).abs() < EPSILON_F);
-        assert!((lhs.y - rhs.y).abs() < EPSILON_F);
-        assert!((lhs.z - rhs.z).abs() < EPSILON_F);
+    fn eq_helper_vec3<T: Number>(lhs: Vec3<T>, rhs: Vec3<T>) {
+        assert!((lhs.x - rhs.x).abs() < T::EPSILON, "{} != {}", lhs.x, rhs.x);
+        assert!((lhs.y - rhs.y).abs() < T::EPSILON, "{} != {}", lhs.y, rhs.y);
+        assert!((lhs.z - rhs.z).abs() < T::EPSILON, "{} != {}", lhs.z, rhs.z);
+    }
+
+    fn eq_helper<T: Number>(lhs: T, rhs: T) {
+        assert!((lhs - rhs).abs() < T::EPSILON, "{} != {}", lhs, rhs);
     }
 
     #[test]
     fn add() {
-        let v1 = Vec3f::new(1.23, 4.56, 7.89);
-        let v2 = Vec3f::new(6.54, 3.12, 8.97);
+        let v1 = TestVec::new(1.23, 4.56, 7.89);
+        let v2 = TestVec::new(6.54, 3.12, 8.97);
 
-        let expected = Vec3f::new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+        let expected = TestVec::new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 
         let result = v1 + v2;
-        eq_helper(result, expected);
+        eq_helper_vec3(result, expected);
     }
 
     #[test]
     fn sub() {
-        let v1 = Vec3f::new(1.23, 4.56, 7.89);
-        let v2 = Vec3f::new(6.54, 3.12, 8.97);
+        let v1 = TestVec::new(1.23, 4.56, 7.89);
+        let v2 = TestVec::new(6.54, 3.12, 8.97);
 
-        let expected = Vec3f::new(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+        let expected = TestVec::new(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 
         let result = v1 - v2;
-        eq_helper(result, expected);
+        eq_helper_vec3(result, expected);
     }
 
     #[test]
     fn add_assign() {
-        let mut v1 = Vec3f::new(1.23, 4.56, 7.89);
-        let v2 = Vec3f::new(6.54, 3.12, 8.97);
+        let mut v1 = TestVec::new(1.23, 4.56, 7.89);
+        let v2 = TestVec::new(6.54, 3.12, 8.97);
 
-        let expected = Vec3f::new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+        let expected = TestVec::new(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 
         v1 += v2;
-        eq_helper(v1, expected);
+        eq_helper_vec3(v1, expected);
     }
 
     #[test]
     fn sub_assign() {
-        let mut v1 = Vec3f::new(1.23, 4.56, 7.89);
-        let v2 = Vec3f::new(6.54, 3.12, 8.97);
+        let mut v1 = TestVec::new(1.23, 4.56, 7.89);
+        let v2 = TestVec::new(6.54, 3.12, 8.97);
 
-        let expected = Vec3f::new(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+        let expected = TestVec::new(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 
         v1 -= v2;
-        eq_helper(v1, expected);
+        eq_helper_vec3(v1, expected);
     }
 
     #[test]
     fn mul() {
-        let v1 = Vec3f::new(1.0, 2.0, 3.0);
+        let v1 = TestVec::new(1.0, 2.0, 3.0);
         let s1 = 2.0;
 
-        let expected = Vec3f::new(v1.x * s1, v1.y * s1, v1.z * s1);
+        let expected = TestVec::new(v1.x * s1, v1.y * s1, v1.z * s1);
 
         let result = v1 * s1;
-        eq_helper(result, expected);
+        eq_helper_vec3(result, expected);
     }
 
     #[test]
     fn mul_assign() {
-        let mut v1 = Vec3f::new(1.0, 2.0, 3.0);
+        let mut v1 = TestVec::new(1.0, 2.0, 3.0);
         let s1 = 2.0;
 
-        let expected = Vec3f::new(v1.x * s1, v1.y * s1, v1.z * s1);
+        let expected = TestVec::new(v1.x * s1, v1.y * s1, v1.z * s1);
 
         v1 *= s1;
-        eq_helper(v1, expected);
+        eq_helper_vec3(v1, expected);
     }
 
     #[test]
     fn div() {
-        let v1 = Vec3f::new(1.0, 2.0, 3.0);
+        let v1 = TestVec::new(1.0, 2.0, 3.0);
         let s1 = 2.0;
 
-        let expected = Vec3f::new(v1.x / s1, v1.y / s1, v1.z / s1);
+        let expected = TestVec::new(v1.x / s1, v1.y / s1, v1.z / s1);
 
         let result = v1 / s1;
-        eq_helper(result, expected);
+        eq_helper_vec3(result, expected);
     }
 
     #[test]
     fn div_assign() {
-        let mut v1 = Vec3f::new(1.0, 2.0, 3.0);
+        let mut v1 = TestVec::new(1.0, 2.0, 3.0);
         let s1 = 2.0;
 
-        let expected = Vec3f::new(v1.x / s1, v1.y / s1, v1.z / s1);
+        let expected = TestVec::new(v1.x / s1, v1.y / s1, v1.z / s1);
 
         v1 /= s1;
-        eq_helper(v1, expected);
+        eq_helper_vec3(v1, expected);
+    }
+
+    #[test]
+    fn len() {
+        let v1 = TestVec::new(1.0, 2.0, 3.0);
+        let expected = (v1.x * v1.x + v1.y * v1.y + v1.z * v1.z).sqrt();
+        eq_helper(v1.len(), expected);
+
+        let v2 = TestVec::new(5.0, 0.0, 0.0);
+        eq_helper(v2.len(), 5.0);
+
+        let v3 = TestVec::new(1.0, 1.0, 0.0);
+        eq_helper(v3.len(), 2.0.sqrt());
+    }
+
+    #[test]
+    fn len_squared() {
+        let v1 = TestVec::new(1.0, 2.0, 3.0);
+        let expected = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
+        eq_helper(v1.len_squared(), expected);
+
+        let v2 = TestVec::new(5.0, 0.0, 0.0);
+        eq_helper(v2.len_squared(), 25.0);
+
+        let v3 = TestVec::new(1.0, 1.0, 0.0);
+        eq_helper(v3.len_squared(), 4.0.sqrt());
+    }
+
+    #[test]
+    fn normalize() {
+        let mut v1 = TestVec::new(5.0, 0.0, 0.0);
+        v1.normalize();
+
+        let expected = TestVec::new(1.0, 0.0, 0.0);
+        eq_helper_vec3(v1, expected);
+
+        let mut v2 = TestVec::new(5.0, 5.0, 0.0);
+        v2.normalize();
+        
+        let expected2 = TestVec::new(0.5.sqrt(), 0.5.sqrt(), 0.0);
+        eq_helper_vec3(v2, expected2);
+    }
+
+    #[test]
+    fn dot() {
+        let v1 = TestVec::new(5.0, 0.0, 0.0);
+        let v2 = TestVec::new(0.0, 4.0, 0.0);
+        eq_helper(super::dot(v1, v2), 0.0);
+        eq_helper(super::dot(v1, v1), v1.len_squared());
     }
 }
