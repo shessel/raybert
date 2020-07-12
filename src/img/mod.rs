@@ -10,7 +10,7 @@ pub fn write_png(data: &[u8], width: u32, height: u32, path: &str) {
     let ref mut buf_writer = BufWriter::new(file);
 
     let mut encoder = Encoder::new(buf_writer, width, height);
-    encoder.set_color(ColorType::RGBA);
+    encoder.set_color(ColorType::RGB);
     encoder.set_depth(BitDepth::Eight);
     let mut writer = encoder.write_header().unwrap();
 

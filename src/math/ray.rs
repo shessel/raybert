@@ -1,7 +1,7 @@
 use super::{Number, Vec3};
 pub struct Ray<T: Number> {
-    origin: Vec3<T>,
-    direction: Vec3<T>,
+    pub origin: Vec3<T>,
+    pub direction: Vec3<T>,
 }
 
 impl<T: Number> Ray<T> {
@@ -13,6 +13,8 @@ impl<T: Number> Ray<T> {
         self.origin + self.direction * t
     }
 }
+
+pub type Rayf = Ray<f32>;
 
 #[cfg(test)]
 mod tests {

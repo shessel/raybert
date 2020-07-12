@@ -92,6 +92,10 @@ impl<T: Number> Vec3<T> {
     pub fn normalize(&mut self) {
         *self /= self.len()
     }
+
+    pub fn get_normalized(&self) -> Self {
+        *self / self.len()
+    }
 }
 
 pub fn dot<T: Number>(lhs: Vec3<T>, rhs: Vec3<T>) -> T {
@@ -327,6 +331,21 @@ pub mod tests {
 
         let expected2 = TestVec::new(0.5.sqrt(), 0.5.sqrt(), 0.0);
         eq_helper_vec3(v2, expected2);
+    }
+
+    #[test]
+    fn get_normalized() {
+        let v1 = TestVec::new(5.0, 0.0, 0.0);
+        let mut v1_copy = v1;
+        v1_copy.normalize();
+
+        eq_helper_vec3(v1.get_normalized(), v1_copy);
+
+        let mut v2 = TestVec::new(5.0, 5.0, 0.0);
+        let mut v2_copy = v2;
+        v2_copy.normalize();
+
+        eq_helper_vec3(v2.get_normalized(), v2_copy);
     }
 
     #[test]
