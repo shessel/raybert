@@ -64,3 +64,32 @@ impl Hittable for Sphere {
         None
     }
 }
+
+pub struct HittableVec {
+    pub vec: Vec<Box<dyn Hittable>>,
+}
+
+impl HittableVec {
+    pub fn new() -> HittableVec {
+        HittableVec { vec: Vec::new() }
+    }
+
+    pub fn push(&mut self, hittable: Box<dyn Hittable>) {
+        self.vec.push(hittable);
+    }
+}
+
+impl Hittable for HittableVec {
+    fn hit(&self, ray: &Rayf, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut result = None;
+        let t_closest = t_max;
+        for hittable in &self.vec {
+            if let Some(rec) = hittable.hit(ray, t_min, t_max) {
+                if rec.t < t_closest {
+                    result = Some(rec);
+                }
+            }
+        }
+        result
+    }
+}

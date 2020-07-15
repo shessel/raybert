@@ -1,11 +1,19 @@
 use raybert::img;
-use raybert::math::intersections::{Hittable, Sphere};
+use raybert::math::intersections::{Hittable, HittableVec, Sphere};
 use raybert::math::{Rayf, Vec3f};
 
 fn ray_color(ray: &Rayf) -> Vec3f {
-    let center = Vec3f::new(0.0, 0.0, -1.0);
-    let sphere = Sphere::new(center, 0.5);
-    if let Some(rec) = sphere.hit(ray, 0.0, f32::MAX) {
+    let mut hittables = HittableVec::new();
+    {
+        let center = Vec3f::new(0.3, 0.1, -1.0);
+        let sphere = Sphere::new(center, 0.5);
+        hittables.push(Box::new(sphere));
+        let center = Vec3f::new(-0.4, -0.3, -1.0);
+        let sphere = Sphere::new(center, 0.7);
+        hittables.push(Box::new(sphere));
+    }
+
+    if let Some(rec) = hittables.hit(ray, 0.0, f32::MAX) {
         return (rec.normal + Vec3f::new(1.0, 1.0, 1.0)) * 0.5f32;
     }
     let unit_dir = ray.direction.get_normalized();

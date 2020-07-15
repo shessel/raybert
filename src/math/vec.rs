@@ -341,7 +341,7 @@ pub mod tests {
 
         eq_helper_vec3(v1.get_normalized(), v1_copy);
 
-        let mut v2 = TestVec::new(5.0, 5.0, 0.0);
+        let v2 = TestVec::new(5.0, 5.0, 0.0);
         let mut v2_copy = v2;
         v2_copy.normalize();
 
