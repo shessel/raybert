@@ -1,12 +1,12 @@
 use raybert::img;
-use raybert::math::{intersections, Rayf, Vec3f};
+use raybert::math::intersections::{Hittable, Sphere};
+use raybert::math::{Rayf, Vec3f};
 
 fn ray_color(ray: &Rayf) -> Vec3f {
     let center = Vec3f::new(0.0, 0.0, -1.0);
-    let t = intersections::ray_sphere(&center, 0.5, ray);
-    if t > 0.0 {
-        let normal = (ray.at(t) - center).get_normalized();
-        return (normal + Vec3f::new(1.0, 1.0, 1.0)) * 0.5f32;
+    let sphere = Sphere::new(center, 0.5);
+    if let Some(rec) = sphere.hit(ray, 0.0, f32::MAX) {
+        return (rec.normal + Vec3f::new(1.0, 1.0, 1.0)) * 0.5f32;
     }
     let unit_dir = ray.direction.get_normalized();
     let t = (unit_dir.y + 1.0) * 0.5;
